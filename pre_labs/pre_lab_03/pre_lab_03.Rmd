@@ -267,6 +267,9 @@ cleaned_conowingo %>%
 
 ### Task 12: Check for duplicate rows
 **Task** Run the following codeblock to use distinct() to get rid of duplicate rows. How many rows does the new dataframe have? Answer below. Add a description of what this code does to your reference notebook.
+
+**** The distinct function removes duplicated rows [exact similar rows] and column by showing the unique names, dates, etc. 
+
 **Answer** 13 rows
 
 ```{r}
@@ -285,6 +288,9 @@ cleaned_conowingo
 
 ### Task 13: Clean up ZIP code
 **Task** Run the following codeblock to use str_sub() to convert the ZIP codes that have nine digits to five digits, standardizing the field. Look at the difference in the result - what changed?
+
+**** 1L - 5L -> the character L stands for left
+
 **Answer** the number changed to five
 
 ```{r}
@@ -347,6 +353,10 @@ cleaned_conowingo
 
 ### Task 16: Clean up city field more with case_when()
 **Task** Run the following codeblock to use case_when() to fix misspellings of Conowingo in the "city" field using both the exact match method and the str_detect() method. How many mispellings of Conowingo remain after running this code? Answer below. Add a description of what this code does to your reference notebook.
+
+**** str_detect means Ctrl+F which is to find words/characters
+user "^" before the name for pattern match and not exact match.
+
 **Answer** Again none?
 ```{r}
 # cleaning function

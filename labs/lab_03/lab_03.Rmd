@@ -1,0 +1,112 @@
+---
+title: "lab_03"
+author: "Derek Willis"
+date: "8/10/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load libraries and establish settings
+```{r}
+# Turn off scientific notation
+options(scipen=999)
+
+# Load the tidyverse here
+library(tidyverse)
+
+# Load janitor here
+install.packages('janitor')
+```
+
+## Load data
+```{r}
+# Write code to load MD slice of FEC House candidate contribution data and call it md_contribs.
+# The data is called lab_03.rds, and is in the data folder alongside lab_03.Rmd (this data notebook)
+
+md_contribs <- read_rds("data/lab_03.rds")
+
+```
+
+
+## Answer questions
+
+Q1: Which seven cities in Maryland had the largest _number_ of contributions from donors? How many did each have? To answer this question, you'll have to clean the messy "contributor_city" field.
+
+Note: To answer this question, you'll need to see every variation of the "contributor_city" for the top seven cities, which you should identify through some initial analysis. Then find variations of them and change those variations into the most common version.
+
+A1: Baltimore (6726), Bethesda (5860), Silver Spring (4659), Chevy Chase (3260), Potomac (2302), Rockville (2213), Annapolis (1999)
+
+```{r}
+Organize_cityNames <- md_contribs %>% 
+  group_by(contributor_city) %>%
+    summarise (total = n()) %>%  
+arrange((contributor_city)) 
+
+```
+
+```{r}
+Organize_cityNames <- md_contribs %>% 
+  mutate(contributor_city = case_when(
+    contributor_city == "11509 LAKE POTOMAC DRIVE" ~ "POTOMAC",
+    contributor_city == "N POTOMAC" ~ "NORTH POTOMAC",
+    contributor_city == "POTAMIC" ~ "POTOMAC",
+    contributor_city == "ANNNAPOLIS" ~ "ANNAPOLIS",
+    contributor_city == "BALITMORE" ~ "BALTIMORE",
+    contributor_city == "SLIVER SPRING" ~ "SILVER SPRING",
+        str_detect(contributor_city,"^ANAP") ~ "ANNAPOLIS",
+        str_detect(contributor_city,"^BETH") ~ "BETHESDA",
+        str_detect(contributor_city,"^SILVER") ~ "SILVER SPRING",
+    TRUE ~ contributor_city 
+
+  )) %>% 
+
+  
+  group_by(contributor_city) %>%
+    summarise (total = n()) %>%  
+    arrange(desc(total)) 
+
+```
+contributor_city == "15600 BEECH TREE PKWY" ~ "UPPER MARLBORO",
+    contributor_city == "15616 EVERGLADE LN APT 404" ~ "HYATTSVILLE",
+    contributor_city == "FT WASHINGTON" ~ "FT. WASHINGTON",
+    
+Q2: Find the 5-digit ZIP code in Maryland that had the highest total amount of contributions (by dollar value). Where is that zip code and what kind of area is it? Which committee is the largest recipient of money from that zip code? How many of the top five recipients are Maryland candidates?
+
+A2: The zip code is 20815 and the contributor city is Chevy Chase. The committee name is "Jamie Raskin for Congress." All the five top are from Maryland of which four are about Jamie Raskin and only one is "HEATHER MIZEUR FOR CONGRESS"
+
+Question, why when I add columns in group by, I  get a different result?
+
+```{r}
+zip_code <- md_contribs %>% 
+  mutate(contributor_zip = str_sub(contributor_zip, start=1L, end=5L))%>% 
+  group_by(contributor_zip, committee_name) %>%
+  summarise (
+    total = n(),
+    total_amount = sum(contribution_receipt_amount) )%>% 
+      arrange(desc(total_amount)) 
+```
+Q3: Let's look at top individual donors to House campaigns. Write code to generate a list of top donors using name and city, adding up the total amount of contributions. One of the top few donors has a very strong connection to the U.S. House - who is that and what does he do? How does his donation pattern differ from the second-largest donor, and what can you say about that second-largest donor?
+
+Feel free to add any interesting "color" (little interesting details) you find in your research.  
+
+A3: David Trone is the top individual donor who is a politician, democrat, and congressman. He contributed $92800.00 overall and the total number of his contribution is 35. The second donor, Juanita Mason, however, contributed 84665.57 over 3072 times which is interesting. By just scrolling and skimming the numbers, I believe she is the only donor who had that large number of contribution. 
+
+```{r}
+# Hint
+# First, create a dataframe of top individual contributors
+# Second, use information from that dataframe to examine individual donations from the original md_contribs dataframe.
+```
+
+```{r}
+top_individual_contributors <- md_contribs %>% 
+  group_by(contributor_name, contributor_city) %>% 
+    summarise (
+    total = n(),
+    total_amount = sum(contribution_receipt_amount) )%>% 
+      arrange(desc(total_amount))  
+
+```
+
