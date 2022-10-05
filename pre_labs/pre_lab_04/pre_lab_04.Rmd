@@ -102,6 +102,7 @@ maryland_demographics <- read_csv('data/maryland_demographics.csv')
 
 ```{r}
 # join on zip - but there's a problem
+#remember that the first column in a join comes from the first dataframe in the statement
 maryland_population_with_voters_and_demographics <- maryland_population_with_voters %>% left_join(maryland_demographics, by=c("COUNTY"="NAME"))
 ```
 
