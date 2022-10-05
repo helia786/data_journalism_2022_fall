@@ -106,7 +106,7 @@ wv_winred_contribs %>%
 
 ```{r}
 wv_winred_contribs %>%
-  group_by(memo_text, amount) %>%
+  group_by(memo_text) %>%
   summarise(
     count_contribs = n(),
     mean_amount = mean(amount)
@@ -131,16 +131,14 @@ Store it as a variable object called `wv_summary` so that you can examine it wit
 Martinsburg had the largest contribution but Charleston had larger amount gathered, interesting too. The min amount collected in Martinsburg is 0.05 and the max amount collected is 500. The median is 10,000. 
 
 ```{r}
-wv_winred_contribs %>%
-  group_by(city) %>%
-  summarise(
+wv_summary <- wv_winred_contribs %>%
+  summarize(
     count_contribs = n(),
     total_amount = sum(amount),
     mean_amount = mean(amount),
     median_amount = median(amount),
     min_amount = min(amount),
-    max_amount = max(amount)
-  ) %>%
+    max_amount = max(amount)) %>%
   arrange(desc(total_amount))
 
 ```
