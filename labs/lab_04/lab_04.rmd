@@ -29,22 +29,22 @@ First, load the two precinct results CSV files in the `data` folder, one each fo
 ```{r}
 md_rep_results <- read_csv("data/md_primary_precinct_rep.csv")
 md_dem_results <- read_csv("data/md_primary_precinct_dem.csv")
-md_locations <- read_csv("data/precinct_voting_locations.csv") 
 
-MD_results_combined <- bind_rows(list(md_rep_results, md_dem_results, md_locations))
+MD_results_combined <- bind_rows(list(md_rep_results, md_dem_results))
 View(MD_results_combined)
 
 glimpse(MD_results_combined)
 ```
 
-
 Next, let's read in the precinct voting location data and make sure you clean up the column names:
 
 ```{r}
-Cleaned_MD_results_combined <- MD_results_combined %>% 
+md_locations <- read_csv("data/precinct_voting_locations.csv")
+
+cleaned_md_locations <- md_locations %>% 
   clean_names() 
 
-glimpse (Cleaned_MD_results_combined)
+glimpse (cleaned_md_locations)
 ```
 
 These two dataframes have a pair of columns in common - not necessarily with the same column names. Join the two dataframes on that unique combination that describes a precinct and the jurisdiction that contains it:
