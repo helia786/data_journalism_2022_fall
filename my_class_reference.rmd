@@ -52,4 +52,55 @@ ppp_maryland_loans %>%
   ) %>%
   arrange(desc(max_loan_amount))
 ```
+Store of a new variable object 
+```{r}
+"fatima" -> wv_winred_contribs %>%
+  
+```
+### Lubridate - this package makes it easier to do the things R does with date-times and possible to do the things R does not.
 
+### head is the title, summary is summary of data, colnames is the brief version of each column name, and glimpse is to get a brief sense of data. 
+
+```{r}
+head(primary_18)
+summary(primary_18)
+colnames(primary_18)
+glimpse(primary_18)
+```
+
+### How to add a new column based on an existing column. Run the following code to create a new column called `percent_election_day` based on a calculation using two existing columns.
+
+```{r}
+primary_18_with_election_day_percent <- primary_18 %>%
+  select(office, district, name_raw, party, jurisdiction, election_day, votes) %>% 
+  mutate(
+  percent_election_day = election_day/votes
+)
+```
+
+### The following code organize data by the new column. 
+
+```{r}
+# better ordering?
+primary_18 %>%
+  select(office, district, name_raw, party, jurisdiction, election_day, votes) %>% 
+  mutate(
+  percent_election_day = (election_day/votes)*100
+)  %>% arrange(desc(percent_election_day))
+```
+
+### Mutate is also useful for standardizing data - for example, making different spellings of, say, cities into a single one.
+You'll notice that there's a mix of styles: "Baltimore" and "BALTIMORE" for example. R will think those are two different cities, and that will mean that any aggregates we create based on city won't be accurate.
+Mutate - it's not just for math! And a function called `str_to_upper` that will convert a character column into all uppercase. Now we can say exactly how many donations came from Baltimore (I mean, of course, BALTIMORE).
+
+```{r}
+standardized_maryland_cities <- maryland_cities %>%
+  mutate(
+    upper_city = str_to_upper(city)
+)
+```
+
+### filter helps with reducing number of rows while select helps with reducing number of columns
+
+### removing some objects from the workspace write the code down in console:
+> rm(maryland_expenses)
