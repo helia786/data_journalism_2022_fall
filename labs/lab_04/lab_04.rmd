@@ -101,8 +101,9 @@ Finally, write code to calculate the average and median number of total votes ac
 
 Take a look at the the Annotated Code of Maryland's election laws (https://mgaleg.maryland.gov/2023RS/Statute_Web/gel/gel.pdf) - can you find a limit on the number of voters assigned to a precinct? How might your answer impact wait times to vote?
 
-A3. 13 precincts are there. Prince George's County has the most which is four. 
+A3. 13 precincts are there. Prince George's County has the most which is four. I guess one thing that I need to know and we discussed in the class is what are the reasons for the people in county not voting? Do we have people living in that location? Are these people just not interested to vote and/or take parts in politics, or what could be other reasons for not participating in voting. 
 
+Mean of tatal votes are 550.8896, and the median is 475.5	
 
 ```{r}
 zero_votes_collection <- votes_collection %>% 
@@ -119,7 +120,14 @@ total_votes_collection %>% ungroup() %>%
 ```
 
 Q4. Choose your own adventure: I want you to come up with a question you could ask of one of the dataframes we've created for this lab. It could involve candidates, or counties or types of voting, but it cannot be a variation of a previous question (so, for example, you can't ask, "What's the average number of votes per precinct in the U.S. Senate primary?"). First write the question and then try to answer it by writing code. If you're not sure of the exact code, try googling (or ask me or Ramsay for advice) but, at a minimum, describe what you think you'd have to do to answer it and what the results would look like. That can help.
-A4: Put your question here.
+A4: I would like to compare Michael Anthony Peroutka with Anthony G. Brown [both run for Attorney General position] in Prince George county to see who got the most votes.
 
 ```{r}
+filter_data <- joined_dataframe %>% 
+filter(county_name == "Prince George's County") %>% filter(candidate_name == "Michael Anthony Peroutka"| candidate_name== "Anthony G. Brown") %>% 
+  group_by(county_name, candidate_name) %>%
+  summarise(voting_location = n_distinct(location_name)) %>%
+  arrange(desc(voting_location))
+
 ```
+
