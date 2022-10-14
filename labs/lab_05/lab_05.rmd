@@ -92,14 +92,10 @@ summarise(total_amount=sum(`Amount($)`)) %>%
 
 **A2.** Ashwani Jain (dem) ran for governor of MD, Peter Franchot  (dem) ran for election for Governor of Maryland. He lost in the Democratic primary on July 19, 2022. Monique Anderson-Walker, Franchot partner, elected to Lt. Governor in Prince George’s County, MD Council, District 8. Billy Boniface (rep) runs for Harford County Executive. Jon Baron (dem) ran for election for Governor of Maryland. He lost in the Democratic primary on July 19, 2022. The Working Families Party is building their own party on top of the two-party system in the United States — and its working. They organize outside the two parties, and then they recruit and train people-powered candidates up and down the ballot and run them to win. Former U.S. Education Secretary and Maryland gubernatorial candidate John King Jr. (dem) has tapped attorney and women’s rights advocate Michelle Siri as his choice for lieutenant governor. Eve T. Shuman (dem) ran for election to the Prince George's County Council, District 3 in Maryland. Shuman was on the ballot in the Democratic primary on July 19, 2022. John McCarthy, Democrat for Montgomery County State's Attorney. 
 
-Its interesting how most candidates paid huge amount starting from 2k -20k on one ad to impress audiences. For instance, Ashwani Jain posted ad almost every day spending 200-300. Whereas a person like Peter Franchot spent 15k-20k on one ad. 
+Its interesting how most candidates paid huge amounts on one ad to impress audiences. For instance, Ashwani Jain posted ad almost every day spending 200-300 for each ad. Whereas a person like Peter Franchot spent 15-20 k boxes on one ad. 
 
 
 **Q3.** Given the list of top spenders in A1 and the primary results for governor (https://elections.maryland.gov/elections/2022/primary_results/gen_results_2022_1.html), who is missing from that Q1 list? Did those campaigns run Facebook ads? Who are the biggest recipients of media expenses by the Democratic primary winner for governor (HINT: that person has two committees you should account for)?
-```{stan output.var=}
-
-
-```
 
 **A3.** Billy Boniface (yes), WFP National Pac - Non-Contribution Account (no), Shuman  Eve T. (yes), McCarthy  John J. (yes very few). 
 
