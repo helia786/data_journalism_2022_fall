@@ -1,0 +1,187 @@
+---
+title: "lab_07"
+author: "derek willis"
+date: "10/21/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## You will need
+
+* A Census API key
+
+## Load libraries and establish settings
+
+You'll need to load two packages for this: the tidyverse and tidycensus.
+
+**Task** load these two packages
+
+```{r}
+# Turn off scientific notation
+options(scipen=999)
+
+# Load the libraries you'll need
+library(tidyverse)
+# if needed, install tidycensus, then load it.
+# install.packages("tidycensus")
+library(tidycensus)
+
+```
+
+## Setup Census API
+
+You'll need your Census API Key:
+
+**Task** set your API Key if you haven't already
+
+```{r echo=FALSE}
+census_api_key("12822965fd4b1859ea8c93f00957080edfef4043", overwrite=TRUE)
+```
+
+## Load and view ACS variables
+
+You'll also need to load the list of American Community Survey variables from the 2020 5-year estimates so you can identify the codes you need:
+
+**Task** load the variables from the 2020 5-year ACS and save them to a dataframe
+
+```{r}
+acs <- load_variables(2020, "acs5")
+```
+
+## Answer questions
+
+**Q1** What is the Maryland jurisdiction with the lowest median age, according to the ACS 2020 5-year estimates? You will need to find the variable for median age first.
+**A1** 
+24510, Baltimore City.
+
+```{r}
+variables <- get_acs(geography = "county", variables = "B01002_001", state = "MD", year = 2020) %>% 
+  
+ arrange((estimate)) 
+
+```
+
+
+**Q2** Which Maryland counties have a median age of at least 50? You can use the dataframe you just made to answer this, but you must write code to display only those counties with a median age of at least 50.
+**A2** 
+Worcester and Talbot counties
+
+```{r}
+variables %>% 
+  filter(estimate >= 50)
+  
+```
+
+**Q3** We're interested in knowing which Maryland counties have the highest percentage of 5-17 year-olds who speak Spanish at home and *also* speak English fluently. Start with the code you wrote for Q1 and alter it to show the total population of 5-17 year-olds by county. Then create a second dataframe to show the number of 5-17 year-olds by county living in homes where Spanish is spoken but who speak English "very well" according to the ACS. To do this, you will need to find the ACS variables that represent those subjects. HINT: the phrase "very well" shows up in multiple variables - you want the one that doesn't include other factors like citizenship. 
+
+For each dataframe, rename the `estimate` column to a meaningful name you've given the ACS variable, remove the `variable` columns in each using select and then join them on GEOID and NAME. Then you can add a column to calculate the percentage of the total 5-17 population that speaks Spanish at home.
+
+Which county has the highest percentage of 5-17 year-olds who speak Spanish at home and also speak English very well?
+
+**A3** 
+Prince George's county with 18.9%
+
+```{r}
+young_hispanic <- get_acs(geography = "county", variables = "B06001_003", state = "MD", year = 2020) %>% 
+  rename(total_pop = estimate) %>% 
+  select(-variable) %>% 
+  
+ arrange(desc(total_pop)) 
+```
+
+```{r}
+fluent_hispanic <- get_acs(geography = "county", variables = "B16004_005", state = "MD", year = 2020) %>% 
+  rename(pop_Spanish_lang = estimate) %>% 
+  select(-variable) %>% 
+  
+ arrange(desc(pop_Spanish_lang)) 
+```
+
+```{r}
+fluent_hispanic %>% 
+  inner_join(young_hispanic, by=c("NAME", "GEOID")) %>% mutate(pct_Hisp_kids = (pop_Spanish_lang/total_pop)*100) %>% 
+  arrange(desc(pct_Hisp_kids))
+```
+
+**Q4** Given the counties with the largest percentage of 5-17 year-olds that speak Spanish at home, which county stands out to you in the data as different from the others? How would you describe the top 5 counties? How would you describe Garrett County's numbers?
+
+**A4** 
+The first five counties include Prince George's County, Montgomery, Talbot, Dorchester, and Frederick.
+One of the interesting thing I noticed is the population for Talbot and Dorchester which are around 5k and 4k and the percentage are kind of high compared to the first two counties given their population as well. In contrast, only 6% of Frederick with 44315 population, speak Spanish at home, which is lower compared to the other four counties. I wonder people from which other races live in this county. Are they mostly white Americans? or immigrants...
+
+Garrett county has the lowest population, 3972, of which only 0.6% speak Spanish at home.
+
+
+**Q5** Pennsylvanians are currently requesting and submitting mail ballots for the November election. You'd like to know more about the people who live in the areas sending in mail ballots. Read in the `zip_totals.csv` file in the data folder containing the number of returned mail ballots per zip code. Then create a dataframe of Pennsylvania ZCTAs that include the following variables from the 2019 ACS: total population and median income. You will need to add `output = "wide"` to the get_acs function so that you get columns for those two variables' estimates and margins of error.
+
+Join the ZCTA dataframe to the zip totals dataframe and calculate a per capita rate for mail ballots per 100 population in each ZCTA, and write code to answer the following questions?
+
+**A5**
+* Which zip code *that has returned at least 100 mail ballots* has the highest per capita rate? 
+
+19436
+
+* Where is that zip code and what does Census Reporter say about its demographics? 
+
+southeast Pennsylvania, Gwynedd. Its population on July 2021 was reported to be 17,133. 77.7% of the population is white and more than 50% are women. 57% have bachelor degree or higher...
+
+This is so strange for me.
+
+* For zip codes with a per capita rate of at least 10 returned ballots per 100 people, how many have median incomes of at least $100,000? 
+
+There are 83 with median income of at least $100,000.
+
+* How many have median incomes less than the state figure of $68,957? 
+
+There are 1214.
+
+* What's the most interesting one from this last result?
+
+The number is huge and the the median income could reach as low as 10,000. 
+
+I just saw this county,Wickhaven, with only 89 population...! 
+
+```{r}
+pa_zip_totals <- read_csv("data/pa_zip_totals.csv") 
+
+```
+
+
+```{r}
+
+Pennsylvania_ZCTAs <- get_acs(geography = "zcta", variables = c(medincome = "B19013_001", total_population = "B01003_001"), output = "wide", state = "PA", year = 2019) %>% 
+    rename(zip = GEOID)
+
+```
+
+```{r}
+ zip_totals <- Pennsylvania_ZCTAs %>% inner_join(pa_zip_totals, by=c("zip"))
+
+```
+
+```{r}
+per_capita_zipTotals <- zip_totals %>% 
+  filter(count > 100) %>% 
+  mutate(per_capita = (count/total_populationE*100)) %>% 
+  arrange(desc(per_capita))
+```
+
+```{r}
+per_capita_zipTotals <- zip_totals %>% 
+    mutate(per_capita = (count/total_populationE*100)) %>% 
+  filter(count > 10) %>% 
+  filter(medincomeE > 100000) %>% 
+  arrange(desc(per_capita))
+```
+
+```{r}
+per_capita_zipTotals <- zip_totals %>% 
+    mutate(per_capita = (count/total_populationE*100)) %>% 
+  filter(medincomeE < 68957) %>% 
+  arrange(desc(per_capita))
+```
+
+
