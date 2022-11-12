@@ -113,21 +113,22 @@ joined_data_comparison_tot %>%
   theme_minimal() +
   scale_fill_viridis_b(option="magma")
 
+
 ```
 
 **Q3** Which county has the highest percentage of mail ballots remaining to be counted? Using the `mail_remaining.csv` file in the data folder, calculate the percentage of mail ballots remaining, then map a county map of those percentages. Looking at both the map and the data, are there counties where the candidate currently leading the governor's race could, in theory, change?
 
-**A3** 
+**A3** for me Baltimore looks strange because despite having only 9% of remaining ballots, on map it still shows dark blue. Other counties look strange too. I feel like this time, the map is not very accurate 
 
 ```{r}
 mail_remaining <- read_csv("data/mail_remaining.csv") %>% 
   clean_names()
 
 ```
-
+mutate(total_mail_votes = (total_sent + total_returned + counted + remaining)) %>% 
 ```{r}
 mail_ballots_remaining <- mail_remaining %>% 
-  mutate(pct_mail_remning = (remaining/total_returned)*100)
+  mutate(pct_mail_remning = (remaining/total_returned)*100) 
 ```
 
 ```{r}
