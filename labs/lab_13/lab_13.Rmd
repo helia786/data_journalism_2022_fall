@@ -1,0 +1,186 @@
+---
+title: "lab_12"
+author: "derek willis"
+date: "11/25/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## You will need
+
+* Our usual libraries for working with data, plus rvest and possibly readxl for reading Excel files.
+
+## Load libraries and establish settings
+
+**Task** Create a codeblock and load appropriate packages and settings for this lab.
+
+```{r}
+# Turn off scientific notation
+options(scipen=999)
+
+library(readxl)
+library(tidyverse)
+library(janitor)
+library(rvest)
+library(lubridate)
+library(readxl)
+library(devtools)
+```
+
+## Getting the Data
+
+We're continuing our contrasting of the 2022 and 2018 elections, but this time we're switching to a different state: Utah. Utah had an unusual Senate election in 2022: Democrats did not nominate a candidate to run against incumbent Republican Mike Lee and instead endorsed an independent, Evan McMullin, in the race. Broadly, we want to dig into the differences between the 2022 Senate results and the 2018 Senate race, when Republican Mitt Romney defeated Democrat Jenny Wilson.
+
+Let's start with the 2022 results. You'll need to locate and scrape the 2022 county-level results for the U.S. Senate race from the Utah Elections site (https://electionresults.utah.gov/elections/). Utah has 29 counties, so if you don't have at least 29 rows in your dataframe, you've scraped the wrong page.
+
+**Task** Scrape the county-level results for the U.S. Senate race in 2022, which can be found at https://electionresults.utah.gov/elections/, into a dataframe. You will need to make sure that you have clean headers, which may involve renaming them, and you will need to remove the total row. Make sure that the columns containing votes are numeric.
+
+```{r}
+Utah_url <- "https://electionresults.utah.gov/elections/countyCount/451556070"
+```
+
+```{r}
+results <- Utah_url %>%
+  read_html() %>%
+  html_table() 
+
+results <- results[[1]] %>% 
+    clean_names()
+
+  
+results
+```
+
+```{r}
+senate_results_22 <- results %>%
+  rename(county = 1, `Abraham Korb` = 2, Mcmullin = 3, Hansen = 4, Hamblin = 5, Seguin =6, Lee = 7, Williams = 8) %>% 
+  slice(-1, -2) %>% 
+  mutate(`Abraham Korb` = as.numeric(`Abraham Korb`), Mcmullin = as.numeric(Mcmullin), Hansen = as.numeric(Hansen), Hamblin = as.numeric(Hamblin), Seguin =as.numeric(Seguin), Lee = as.numeric(Lee), Williams = as.numeric(Williams))
+
+
+senate_results_22
+```
+
+Next, we'll get the 2018 results. Unlike the 2022 results, these are stored in an Excel file located here: https://elections.utah.gov/Media/Default/2018%20Election/2018%20General%20Election%20Canvass.xlsx. You can choose how to get the U.S. Senate results - whether you download and save the file in this lab_13 folder (we did this in pre_lab_12) or whether you download it manually and create a CSV file from the Senate results sheet in this directory. Like the 2022 results, you'll want to make a dataframe with clean headers, no total row and numeric columns for the votes.
+
+**Task** Get the county-level results for the U.S. Senate race in 2018, which can be found at https://elections.utah.gov/Media/Default/2018%20Election/2018%20General%20Election%20Canvass.xlsx, and turn them into a dataframe. You will need to make sure that you have clean headers, which may involve renaming them, and you will need to remove the total row. Make sure that the columns containing votes are numeric.
+
+```{r}
+US_Senate_18_url <- "https://elections.utah.gov/Media/Default/2018%20Election/2018%20General%20Election%20Canvass.xlsx"
+```
+
+```{r}
+US_Senate_18 <- read_xlsx("~/Documents/GitHub/data_journalism_2022_fall/labs/lab_13/2018_General_Election_Canvass.xlsx", sheet = 2) 
+  
+```
+
+```{r}
+senate_results_18 <- US_Senate_18 %>%
+  rename(county = 1, Aalders = 2, Bowden = 3, McCandless = 4, Wilson = 5, Romney =6, Fitzgerald = 7, Reeve = 8, Reiksthegn = 9, `Abe Korb` = 10, Jackson = 11, Judy = 12, Jensen = 13) %>% 
+  slice(-1, -2, -34, -32) %>% 
+  mutate(Aalders = as.numeric(Aalders)) %>% 
+        mutate(Bowden = as.numeric(Bowden), McCandless = as.numeric(McCandless), Wilson = as.numeric(Wilson), Romney = as.numeric(Romney), Fitzgerald = as.numeric(Fitzgerald), Reeve = as.numeric(Reeve), Reiksthegn = as.numeric(Reiksthegn), `Abe Korb` = as.numeric(`Abe Korb`), Jackson = as.numeric(Jackson), Judy = as.numeric(Judy), Jensen = as.numeric(Jensen)
+        )
+  
+senate_results_18
+```
+Finally, join the two dataframes together:
+
+**Task** Join the 2022 and 2018 results into a single dataframe.
+
+```{r}
+combined_senate_results <- senate_results_22 %>% 
+  inner_join(senate_results_18, by = "county") %>% 
+  clean_names()
+```
+
+## Questions
+
+**Q1.** Calculate the difference in votes between Evan McMullin and Jenny Wilson and save it your combined dataframe. Write up some sentences that could go in a story describing where McMullin outperformed Wilson and where he didn't. Mention the margins and describe the counties you mention (location, population or another factor, such as 2020 presidential vote).
+
+**A1.** McMullin did better than Wilson in all but one county, San Juan, which has fewer than 15,000 people. In particular, McMullin did much better in Utah County, which includes Brigham Young University. McMullin got within 4,000 votes of Joe Biden's total in 2018 here.
+
+```{r}
+combined_senate_results <- combined_senate_results %>%  
+  mutate(total_22 = `abraham_korb` + mcmullin + hansen + hamblin + seguin + lee + williams) %>% 
+  mutate(pct_mcmullin = mcmullin/total_22*100) %>% 
+  mutate(total_18 = aalders + bowden + mc_candless + wilson + romney + fitzgerald + reeve + reiksthegn + `abe_korb` + jackson + judy + jensen) %>% 
+  mutate(pct_wilson = wilson/total_18*100) %>% 
+  mutate(diff_mcmullin_wilson = pct_mcmullin - pct_wilson)
+
+```
+
+**Q2** Calculate the difference in votes between Mike Lee and Mitt Romney and save it your combined dataframe. Write up some sentences that could go in a story describing where Romney outperformed Lee and where he didn't. Mention the margins and describe the counties you mention (location, population or another factor).
+
+**A2** Romney got more votes in 13 of Utah's 29 counties, and in particular Salt Lake and Davis counties. In the counties where Lee outperformed Romney, the margin was a matter of less than a thousand votes in all but one case. Lee's best performance relative to Romney was in Washington County, a reliably conservative county.
+
+```{r}
+combined_senate_results <- combined_senate_results %>%  
+  mutate(pct_lee = lee/total_22*100) %>% 
+  mutate(pct_romney = romney/total_18*100) %>% 
+  mutate(diff_lee_romney = pct_lee - pct_romney)
+```
+
+**Q3** Sen. Ben Cardin, D-Maryland, has posted hundreds of press releases at https://www.cardin.senate.gov/?post_type=press-releases. It would be great to have all of them in a dataframe that has the following columns: date, title and url.
+
+To do this, you will need to scrape the page's html and save that to a variable, and separately use that variable to then extract the dates, titles and urls into separate dataframes using html_elements(). The function `html_text()` pulls out the contents of a tag, but for urls we want the HTML attribute. Rvest gives you a way to extract the URL from a link; google to find out what it is.
+
+At the end, you'll have three dataframes that you want to combine into a single dataframe. When we want to combine the rows of identical dataframes, we used `bind_rows()`. There's an alternative you can use to do the same for combining columns, and it works the same way.
+
+When you're done, rename the columns so they make sense, then make sure the date column is an actual date.
+
+Finally, tell me what questions you could ask of this data. Be creative.
+
+**A3** My questions would be what was the purpose of posting all these press releases?
+Was he the author? Were these press releases include some of his interest? Did these press releases include problems that he intended to solve? Did he take part in these press releases? How did he pick the topics?
+
+```{r}
+MD_url <- "https://www.cardin.senate.gov/?post_type=press-releases"
+```
+
+```{r}
+MD_results <- MD_url %>%
+  read_html()
+
+# display the html below
+MD_results
+
+```
+
+```{r}
+dates <- MD_results %>% 
+html_elements ('h5') %>% html_text() %>% as_tibble() 
+
+```
+
+
+```{r}
+title <- MD_results %>% 
+html_elements ('h3 a') %>% html_text() %>% as_tibble() 
+```
+
+```{r}
+url <- MD_results %>% 
+html_nodes ('h3 a') %>% html_attr('href') %>% as_tibble() 
+
+```
+
+```{r}
+cleaned_bind_cols <- bind_cols(title, dates, url)
+```
+```{r}
+cleaned_bind_cols <- cleaned_bind_cols %>% 
+ rename(title = "value...1",
+        date = "value...2",
+        url = "value...3")  
+  
+```
+
+
+```{r}
+cleaned_bind_cols <- cleaned_bind_cols %>% 
+  mutate(date = lubridate :: mdy(date))
+```
