@@ -1,0 +1,153 @@
+---
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r}
+options(scipen=999)
+library(tidyverse)
+library(lubridate)
+```
+
+***loading my data files that include both democratic and republican committees
+
+```{r}
+dem_committee_rais <- read_csv("democratic_committee_raising_receipts.csv")
+rep_committee_rais <- read_csv("republican_committee_raising_receipts.csv")
+
+```
+***finding the top 50 contributors for democratic committee
+
+- The result is interesting to me because from 18 to 28 of the top 50 contributors, there are individuals who contributed the same amount of money ($20,000). Of these individuals, only two are from Virginia. The rest are from different states California, Illinois, Indiana, and Massachusetts.
+- Overall, of the top 50 contributors, 25 are done by individuals from different states, including the ones mentioned above and Colorado, Connecticut, Minnesota, Georgia, and DC.
+- Another interesting fact about these individuals is their occupations. Many are retired. A number of the contributors have high positions, such as chairman, investor, executive vice president, etc. There are, however, two individuals who are not employed and one individual who is a writer. They contributed between $15,000, $10,000, and $10,450.
+_ the contribution amount started with the highest amount, $951056.00, contributed by the DEMOCRATIC CONGRESSIONAL CAMPAIGN COMMITTEE, and the lowest amount, $5 contributed by an individual named David Bursik who is a retired person from Virginia state. 
+
+```{r}
+dem_high_contributors <- dem_committee_rais %>% 
+    group_by(contributor_name, committee_name...2, entity_type_desc, contributor_state, contributor_occupation) %>% 
+  summarise(total_amount = sum(contribution_receipt_amount)) %>% 
+    arrange(desc(total_amount)) %>% 
+  head(50)
+```
+*** The total amount contributed is $951,056 by a political party committee named 'democratic congressional campaign committee' which is based in DC and mostly campaign to support Democratic House Candidates. This committee contributed 14 times with the highest amount of $161160 and the lowest amount of $2,330.
+
+```{r}
+dem_congressional_campaign_contributors <- dem_committee_rais %>% 
+  filter(contributor_name == "DEMOCRATIC CONGRESSIONAL CAMPAIGN COMMITTEE") %>% 
+  group_by(contribution_receipt_date) %>% 
+  summarise(total_amount = sum(contribution_receipt_amount)) %>% 
+    arrange(desc(total_amount))
+```
+
+***Here the barchart shows the same result for a better understanding 
+
+```{r fig.width=9}
+dem_congressional_campaign_contributors %>% 
+  filter(total_amount > 0) %>% 
+  ggplot() +
+  geom_bar(aes(x=contribution_receipt_date, weight=total_amount))+
+#  coord_flip() + 
+  theme_minimal() +
+  labs(
+    title = "congressional_campaign_contributors",
+    y = "contribution_receipt_date",
+    x = "contribution_receipt_amount"
+  )
+```
+**finding the top 50 contributors for republican committee
+
+- the result for republican is interesting because unlike the democratic committee and the contributors that were half done by individuals, for republicans more than 90% of the contributors are individuals from different states that include California, Virginia, New York, Florida, Texas, Maryland, Missouri, Arkansas, Washington State, Connecticut, Tennessee, Georgia, and Illinois. 
+- Most these states have more Republican followers in general than democratic followers. Some of the individual contributors have strange occupations such as homemakers and owners.
+- These are very general terms which could be interpreted differently. Wondering what they meant by being a homemaker or an owner.
+- The top 11 individuals contributed $20,000 each and the remained 28 donors paid $10,000 each. 
+_ the contribution amount started with the highest amount, $2964365.00, contributed by the REPUBLICAN NATIONAL COMMITTEE, and the lowest amount, $15 contributed by an individual named David Trout who is a retired person from Virginia state. 
+
+```{r}
+rep_high_contributors <- rep_committee_rais %>% 
+  group_by(contributor_name, committee_name...2, entity_type_desc, contributor_state, contributor_occupation) %>% 
+  summarise(total_amount = sum(contribution_receipt_amount)) %>% 
+    arrange(desc(total_amount)) %>% 
+  head(50)
+```
+*** The total amount contributed by REPUBLICAN NATIONAL COMMITTEE is $2964365.00.This committee founded in 1854 has a headquarter in DC and mostly campaign to support republican Candidates. The committee contributed 34 times with the highest amount of $447100 and the lowest amount of $1,600.
+
+```{r}
+rep_congressional_campaign_contributors <- rep_committee_rais %>% 
+  filter(contributor_name == "REPUBLICAN NATIONAL COMMITTEE") %>% 
+  group_by(contribution_receipt_date) %>% 
+  summarise(total_amount = sum(contribution_receipt_amount)) %>% 
+    arrange(desc(total_amount))
+```
+
+**loading my data files that include both democratic and republican committees' spending 
+
+```{r}
+dem_committee_spend <- read_csv("democratic_committee_spending_receipts.csv")
+rep_committee_spend <- read_csv("republican_committee_spending_receipts.csv")
+```
+* Checking the 20 top consumption for the democratic committee.
+- The first four top highest amounts were spent on sending mails to the opposite committee (3 mails) and one mail to promote the democratic candidate (Abigail Spanberger). The mails that were sent to the opposite committee were particularly sent to Yesli Vega, Jen Kiggans, and Hung Cao, who are all from Virginia.
+- Interestingly enough, the highest amount spent was $400974.11, and the purpose was to send mails to Yesli Vega, but the recipient's name is mentioned as GUMBINNER & DAVIES COMMUNICATIONS which seems to be a marketing consultant organization in DC. Now I am curious about the relationship between this organization and Candidate Yesli. When I googled the organization's name, I could only find out about the consulting part and nothing else.
+- The second and third highest amounts, $282428.42 and $260807.84, were sent to MISSION CONTROL INC in Connecticut. This company's mission is mainly to select and promote republican candidates.
+- In general, something interesting that caught my eye was the different purposes that the money was spent on, including '401K CONTRIBUTIONS', 'health insurance', and software...
+  Four times the money was spent on 401k Contributions, with the highest amount of $5981.68 and the lowest amount of $562.50. The recipients are American funds and the retirement advantage. Both recipients seem to be on retirement plans, making me even more curious about why someone or a committee would be spending money on retirement plans. What does even this mean?
+  Two times different amounts, $59297.10 and $3632.96, were spent on health insurance. The recipient for the first amount is United Healthcare from Virginia, and the second recipient is PRINCIPAL INSURANCE COMPANY from Iowa state. Now the same questions of why someone would spend money on health insurance would be raised. I cannot find the connections between the committee raising money for elections and health insurance...
+  Two times different amounts, $600 and $572.78 were spent on software. The recipient for the first amount is VIRGINIA INTERACTIVE from Maryland, and the second recipient is SWITCHBOARD PUBLIC BENEFIT CORP from DC. The general terms of software and the names of these organizations seem odd. As a researcher, I would be curious to know more details about each one of these...
+
+```{r}
+dem_high_consumption <- dem_committee_spend %>% 
+  group_by(disbursement_description, entity_type_desc, recipient_name, recipient_state) %>% 
+  summarise(total_spending = sum(disbursement_amount)) %>% 
+    arrange(desc(total_spending)) 
+```
+* Checking top consumption for the republican committee.
+_ Unlike democratic committee spending money on sending mails to the opposite candidates, republican didn't do that. 
+- The first highest amount, $658500.00, spent by the republican committee is on REPUBLICAN PARTY OF VA NON FEDERAL ACCT. The money was transferred to them. The second highest amount spent, $295196.00, was on sending mails to support campaigns of republican candidates. The recipient is AXIOM STRATEGIES LLC in Missouri. And the third highest amount, $176023.56, was spent on EMPLOYEE WITHHOLDING & PAYROLL TAXES in Virginia. 
+- similarly as the democratic committee, the republican committee also spent various amounts on various issues that sounds irrelevant to me. For instance,
+  the committee paid five different amounts of 
+  $6837.22 to ANTHEM BLUE CROSS BLUE SHIELD in New Jersey
+  $4900.00 to CIGNA HEALTH INSURANCE in Pennsylvania
+  $3850.00 to UNITED HEALTHCARE in Georgia
+  $2100.00 to KAISER PERMANENTE in Florida and 
+  $1045.56 to USHEALTH CARE in Texas 
+just for health insurance and I am curious to know why someone would pay these amounts on health insurance? Is this insurance for the a specific candidate? 
+- Also there are various amounts spent on lodging in different states and the highest amount paid is $4321.72. Who stayed in these places? If someone wants to write detailed report on the spent amount, the person needs answers for many who and why questions. 
+- last but not least, there are 13 voided check with negative numbers to 12 individuals and one organization. The individuals are mostly from Virginia, one from Alabama and two from DC. And the Organization is in Virginia too. The highest amount spent was -7,500 to the organization named STRATPOLI LLC (political consulting company) and the lowest amount spent was -26.91 to an individual named CHASE R DAVIDSON. 
+
+Now the questions that were raised from the voided check is why would a committee send a voided check to someone or an organization? Is this like refunding? Did the committee mistakenly sent these amounts? Did these individuals and the organization make a mistake of sending money to the republican committee and now the committee sent them back their money? 
+
+
+```{r}
+rep_high_consumption <- rep_committee_spend %>% 
+  group_by(disbursement_description, entity_type_desc, recipient_name, recipient_state) %>% 
+  summarise(total_spending = sum(disbursement_amount)) %>% 
+    arrange(desc(total_spending)) 
+```
+*** trying to present the results and the various amounts spent on voided check
+
+```{r}
+rep_party_VA <- rep_committee_spend %>% 
+  filter(disbursement_description == "VOIDED CHECK") %>% 
+  group_by(disbursement_date, recipient_name) %>% 
+  summarise(total_spending = sum(disbursement_amount)) %>% 
+    arrange(desc(total_spending)) 
+```
+
+***Here the barchart shows the same result for a better understanding 
+-here I presented the result for voided check which interestingly happened in one date. So I had to filter by recipient name to get all the results and each amount sent to individuals and the organization.
+
+```{r fig.width=9}
+rep_party_VA %>% 
+  filter(total_spending < 0) %>% 
+  ggplot() +
+  geom_bar(aes(x=recipient_name, weight=total_spending))+
+  coord_flip() + 
+  theme_minimal() +
+  labs(
+    title = "congressional_campaign_disbursment",
+    y = "contribution_total_spending",
+    x = "recipient_name"
+  )
+```
